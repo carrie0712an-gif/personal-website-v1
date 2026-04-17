@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 赋能岗位建设 - 设计项目总结</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #3B82F6;
+      --blue-dark: #2563EB;
+      --bg: #020617;
+      --card: #0F172A;
+      --border: rgba(59,130,246,0.15);
+      --muted: #94A3B8;
+      --grid: 40px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: var(--grid) var(--grid);
+      overflow-x: hidden;
+    }
+
+    /* ── Back Button ── */
+    .back-btn {
+      position: fixed;
+      left: 24px;
+      top: 24px;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      text-decoration: none;
+    }
+    .back-btn:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+      transform: translateX(-4px);
+    }
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+
+    /* ── Scanline ── */
+    .scanline {
+      width: 100%; height: 100px; z-index: 9999;
+      background: linear-gradient(0deg, transparent 0%, rgba(59,130,246,0.02) 50%, transparent 100%);
+      opacity: 0.1; position: fixed; bottom: 100%; left: 0; pointer-events: none;
+      animation: scanline 8s linear infinite;
+    }
+    @keyframes scanline { 0%{bottom:100%} 100%{bottom:-100px} }
+
+    /* ── Utilities ── */
+    .metadata-text {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg,#3B82F6,#2563EB);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .text-outline {
+      -webkit-text-stroke: 1px rgba(59,130,246,0.6); color: transparent;
+      text-transform: uppercase;
+    }
+    .glass-card {
+      background: var(--card); border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+    }
+    .tech-border { position: relative; }
+    .tech-border::before, .tech-border::after {
+      content:''; position:absolute; width:10px; height:10px;
+      border-color: var(--blue); opacity: 0.5;
+    }
+    .tech-border::before { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; }
+    .tech-border::after  { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
+
+    .section-container { max-width: 1280px; margin: 0 auto; padding: 96px 24px; position: relative; }
+
+    /* ── Fade-in on scroll ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .cover-left.reveal-left.visible { transform: translateY(-10px) translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+    .cover-mockup.reveal-right.visible { transform: translateY(-40px) translateX(0); }
+
+    /* ── Section Header ── */
+    .section-header { margin-bottom: 64px; position: relative; }
+    .section-header .outline-text {
+      position: absolute; top: -48px; left: -16px;
+      font-size: clamp(48px,8vw,96px); font-weight: 900;
+      -webkit-text-stroke: 1px rgba(59,130,246,0.6); color: transparent;
+      text-transform: uppercase; pointer-events: none; z-index: 0;
+      opacity: 0.35; white-space: nowrap; font-family: 'Outfit', sans-serif;
+      transition: opacity 0.5s;
+    }
+    .section-header:hover .outline-text { opacity: 0.7; }
+    .section-header .inner { position: relative; z-index: 10; }
+    .section-header .no-line { display: none; }
+    .section-header h2 {
+      font-size: clamp(28px,4vw,48px); font-weight:700; color:#fff;
+      display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin-top:-36px;
+    }
+    .section-header h2 .sub-en {
+      font-size:10px; font-weight:400; color:var(--muted); text-transform:uppercase;
+      letter-spacing:0.4em; font-family:'JetBrains Mono',monospace;
+      border-left:1px solid rgba(255,255,255,0.1); padding-left:16px;
+    }
+    .section-header .subtitle {
+      margin-top:16px; padding-left:24px; border-left:2px solid rgba(59,130,246,0.2);
+      color:var(--muted); font-size:14px; line-height:1.7; font-style:italic; max-width:600px;
+    }
+
+    /* ── Metadata Header ── */
+    .meta-header {
+      max-width:1280px; margin:0 auto; padding:32px 24px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+
+    /* ─────────────── COVER ─────────────── */
+    #cover {
+      min-height: 100vh; display:flex; flex-direction:column;
+      background: #020617; position:relative; overflow:hidden;
+    }
+    #cover .glow1 {
+      position:absolute; top:25%; left:-80px; width:384px; height:384px;
+      background:rgba(59,130,246,0.1); border-radius:50%; filter:blur(120px);
+    }
+    #cover .glow2 {
+      position:absolute; bottom:25%; right:-80px; width:384px; height:384px;
+      background:rgba(37,99,235,0.1); border-radius:50%; filter:blur(120px);
+    }
+    .cover-grid {
+      max-width:1280px; margin:0 auto; padding:32px 24px 0;
+      display:grid; grid-template-columns:1fr; gap:48px; align-items:center; flex:1;
+    }
+    @media(min-width:1024px) { .cover-grid { grid-template-columns: 5fr 7fr; } }
+    .cover-left { z-index:10; }
+    .cover-title { font-size:clamp(56px,10vw,96px); font-weight:900; color:#fff; line-height:0.85; letter-spacing:-0.04em; margin-top:50px; margin-bottom:8px; }
+    .cover-subtitle { font-size:clamp(24px,3.5vw,40px); color:var(--blue); font-weight:700; margin-bottom:64px; }
+    .cover-desc { color:rgba(255,255,255,0.6); font-size:15px; line-height:1.8; max-width:480px; margin-bottom:32px; }
+    .cover-tags { display:flex; flex-wrap:wrap; gap:12px; }
+    .cover-tag {
+      padding:8px 24px; border-radius:999px; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.6);
+      font-size:11px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase;
+    }
+    .cover-mockup {
+      position:relative; display:none;
+      transform:translateY(-40px);
+    }
+    @media(min-width:1024px) { .cover-mockup { display:block; } }
+    .mockup-screen {
+      position:relative; width:100%; aspect-ratio:1440/810;
+      background:#020617; border-radius:12px; border:4px solid #000;
+      overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,0.6);
+      transform:skewY(4deg) scale(0.8) translateY(20px);
+      transition:transform 0.5s ease;
+    }
+    .mockup-screen:hover { transform:skewY(0deg) scale(0.82) translateY(20px); }
+    .mockup-screen img { width:100%; height:100%; object-fit:cover; }
+    .mockup-notch {
+      position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:96px; height:18px; background:#000; border-radius:0 0 8px 8px;
+    }
+    .cover-footer {
+      max-width:1280px; margin:auto auto 0; padding:0 24px 32px; width:100%;
+      display:flex; justify-content:space-between; align-items:center; gap:16px;
+      border-top:1px solid rgba(255,255,255,0.05); padding-top:32px; flex-wrap:wrap;
+    }
+    .cover-footer-icons { display:flex; gap:16px; color:rgba(255,255,255,0.4); }
+    .cover-footer-icons svg { width:16px; height:16px; }
+
+    /* ─────────────── BACKGROUND ─────────────── */
+    #background {
+      background:#020617; border-top:1px solid rgba(255,255,255,0.05);
+      position:relative; overflow:hidden; min-height:700px; display:flex; align-items:center;
+    }
+    #background .bg-img {
+      position:absolute; inset:0;
+    }
+    #background .bg-img img {
+      width:100%; height:100%; object-fit:cover; opacity:0.3;
+    }
+    #background .bg-img::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(90deg,#020617,rgba(2,6,23,0.9),transparent);
+    }
+    #background .bg-img::before {
+      content:''; position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg,transparent,#020617);
+    }
+    .bg-cards { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:48px; }
+    @media(max-width:640px) { .bg-cards { grid-template-columns:1fr; } }
+    .bg-card {
+      padding:32px; border-radius:24px; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.05);
+      transition:background 0.5s; cursor:default;
+    }
+    .bg-card:hover { background:rgba(255,255,255,0.08); }
+    .bg-card .icon {
+      width:56px; height:56px; border-radius:16px; background:rgba(59,130,246,0.2);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--blue); margin-bottom:24px;
+      transition:transform 0.5s;
+    }
+    .bg-card:hover .icon { transform:scale(1.1); }
+    .bg-card h4 { font-size:20px; font-weight:700; color:#fff; margin-bottom:12px; }
+    .bg-card p { font-size:13px; color:var(--muted); line-height:1.7; }
+
+    /* ─────────────── PAIN POINTS ─────────────── */
+    #painpoints { background:#020617; }
+    .pain-grid { display:grid; grid-template-columns:1fr; gap:32px; margin-top:200px; }
+    @media(min-width:768px) { .pain-grid { grid-template-columns:repeat(3,1fr); } }
+    .pain-card {
+      padding:40px; border-radius:24px; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.05); position:relative; overflow:hidden;
+      transition:border-color 0.5s;
+    }
+    .pain-card:hover { border-color:rgba(59,130,246,0.3); }
+    .pain-card .corner {
+      position:absolute; top:0; right:0; width:96px; height:96px;
+      background:rgba(59,130,246,0.05); border-radius:0 0 0 100%;
+      transform:translate(48px,-48px); transition:transform 0.5s;
+    }
+    .pain-card:hover .corner { transform:translate(0,0); }
+    .pain-card .icon {
+      width:48px; height:48px; border-radius:12px; background:rgba(59,130,246,0.1);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--blue); margin-bottom:32px;
+      transition:transform 0.3s;
+    }
+    .pain-card:hover .icon { transform:scale(1.1); }
+    .pain-card h3 { font-size:18px; font-weight:700; color:#fff; margin-bottom:16px; }
+    .pain-card p { font-size:13px; color:var(--muted); line-height:1.8; }
+
+    /* ─────────────── DESIGN GOAL ─────────────── */
+    #designgoal { background:#020617; border-top:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05); }
+    .goal-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:200px; position:relative; }
+    @media(max-width:1024px) { .goal-steps { grid-template-columns:1fr 1fr; } }
+    @media(max-width:640px) { .goal-steps { grid-template-columns:1fr; } }
+    .goal-line {
+      display:none; position:absolute; top:120px; left:0; right:0; height:1px;
+      border-top:1px dashed rgba(255,255,255,0.2);
+    }
+    @media(min-width:1024px) { .goal-line { display:block; } }
+    .goal-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+    .goal-step-top { display:flex; flex-direction:column; align-items:center; height:120px; margin-bottom:32px; }
+    .goal-step-icon {
+      width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center;
+      justify-content:center; color:rgba(255,255,255,0.6); margin-bottom:16px;
+      transition:all 0.5s;
+    }
+    .goal-step:hover .goal-step-icon { color:var(--blue); border-color:rgba(59,130,246,0.5); }
+    .goal-step h4 { font-size:17px; font-weight:700; color:#fff; }
+    .goal-step .step-sub { font-size:13px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:4px; }
+    .goal-dot {
+      width:16px; height:16px; border-radius:50%; background:#020617;
+      border:2px solid var(--blue); position:relative; margin-bottom:48px; z-index:10;
+    }
+    .goal-dot::after {
+      content:''; position:absolute; inset:4px; border-radius:50%;
+      background:rgba(59,130,246,0.2); transition:background 0.5s;
+    }
+    .goal-step:hover .goal-dot::after { background:var(--blue); }
+    .goal-content {
+      padding:24px; border-radius:16px; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.05); min-height:140px; width:100%;
+      transition:border-color 0.5s; position:relative;
+    }
+    .goal-step:hover .goal-content { border-color:rgba(59,130,246,0.2); }
+    .goal-content::before {
+      content:''; position:absolute; top:-6px; left:50%; transform:translateX(-50%) rotate(45deg);
+      width:12px; height:12px; background:#020617;
+      border-top:1px solid rgba(255,255,255,0.05); border-left:1px solid rgba(255,255,255,0.05);
+    }
+    .goal-content ul { list-style:none; text-align:left; }
+    .goal-content li { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
+    .goal-content li::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--blue); flex-shrink:0; margin-top:7px; }
+    .goal-content li span { font-size:12px; color:var(--muted); line-height:1.6; }
+    .goal-step:hover .goal-content li span { color:rgba(255,255,255,0.8); }
+
+    /* ─────────────── INPUT ─────────────── */
+    #input { background:#020617; overflow:hidden; }
+    .input-grid { display:grid; grid-template-columns:1fr; gap:48px; align-items:center; margin-top:44px; }
+    @media(min-width:1024px) { .input-grid { grid-template-columns:5fr 7fr; } }
+    .input-steps { position:relative; }
+    .input-step { position:relative; padding-left:32px; margin-bottom:48px; }
+    .input-step-line {
+      position:absolute; left:0; top:10px; bottom:-38px; width:1px;
+      background:rgba(255,255,255,0.1);
+    }
+    .input-step:last-child .input-step-line { display:none; }
+    .input-step-dot {
+      position:absolute; left:0; top:10px; transform:translate(-50%,-50%);
+      width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.2);
+      transition:background 0.3s; z-index:10;
+    }
+    .input-step:hover .input-step-dot { background:var(--blue); }
+    .input-step h5 { font-size:17px; font-weight:700; color:#fff; margin-bottom:8px; }
+    .input-step p { font-size:13px; color:var(--muted); line-height:1.7; max-width:400px; }
+    .input-step:hover p { color:rgba(255,255,255,0.7); }
+    .input-tags { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
+    .input-tag {
+      padding:6px 16px; border-radius:999px; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4);
+      font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase;
+      transition:all 0.3s; cursor:default;
+    }
+    .input-tag:hover { border-color:rgba(59,130,246,0.4); color:rgba(255,255,255,0.8); }
+    .input-mockups {
+      position:relative; height:500px; display:flex; align-items:center; justify-content:center;
+    }
+    .v-card {
+      position:absolute; border-radius:12px; overflow:hidden;
+      border:1px solid #fff; box-shadow:0 30px 60px rgba(0,0,0,0.5);
+      cursor:pointer; transition:box-shadow 0.3s;
+    }
+    .v-card:hover { box-shadow:0 40px 80px rgba(0,0,0,0.7); z-index:10; }
+    .v-card img { width:100%; height:auto; display:block; }
+    .v-badge {
+      position:absolute; top:12px; right:12px;
+      padding:4px 8px; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
+      border-radius:6px; border:1px solid rgba(255,255,255,0.1);
+      font-size:10px; font-family:'JetBrains Mono',monospace; color:rgba(255,255,255,0.9);
+    }
+    .v1 { width:240px; transform:translate(-120px,60px) rotate(-6deg); z-index:1; }
+    .v2 { width:280px; transform:translate(0,0) rotate(0deg); z-index:2; }
+    .v3 { width:300px; transform:translate(100px,-60px) rotate(6deg); z-index:5; }
+    @media(min-width:768px) { .v1{width:380px;} .v2{width:460px;} .v3{width:480px;} }
+
+    /* ─────────────── PERCEPTION ─────────────── */
+    #perception {
+      background:#020617; border-top:1px solid rgba(255,255,255,0.05);
+      position:relative; overflow:hidden; min-height:700px;
+    }
+    .perception-bg {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    }
+    .perception-bg img { width:100%; height:100%; object-fit:contain; opacity:1; transform:scale(1.4); }
+    .perception-fade {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 70% 60% at center, transparent 0%, transparent 30%, rgba(2,6,23,0.5) 60%, #020617 100%);
+      pointer-events:none;
+    }
+    .perception-fade-left {
+      position:absolute; left:0; top:0; bottom:0; width:50%;
+      background:linear-gradient(to right, #020617, transparent);
+      pointer-events:none;
+    }
+    .perception-fade-right {
+      position:absolute; right:0; top:0; bottom:0; width:50%;
+      background:linear-gradient(to left, #020617, transparent);
+      pointer-events:none;
+    }
+    .perception-fade2 {
+      position:absolute; inset-x:0; bottom:0; height:300px;
+      background:linear-gradient(to top,#020617,transparent); pointer-events:none;
+    }
+    .perception-fade-top {
+      position:absolute; inset-x:0; top:0; height:300px;
+      background:linear-gradient(to bottom,#020617,transparent); pointer-events:none;
+    }
+    .perception-float {
+      position:absolute; pointer-events:none;
+    }
+    .perception-float.left {
+      top:calc(18% + 100px); left:calc(10% + 20px); width:32%;
+      animation:floatUD 7s ease-in-out infinite;
+    }
+    .perception-float.left img { transform:scale(1); }
+    .perception-float.right {
+      bottom:calc(15% - 50px); right:12%; width:32%;
+      animation:floatDU 6s ease-in-out infinite;
+      z-index:10;
+    }
+    .perception-float.right img { transform:scale(1); }
+    .perception-float img { width:100%; height:auto; border-radius:8px; box-shadow:0 25px 25px rgba(0,0,0,0.35); opacity:1; }
+    @keyframes floatUD { 0%,100%{transform:translateY(15px)} 50%{transform:translateY(-15px)} }
+    @keyframes floatDU { 0%,100%{transform:translateY(-15px)} 50%{transform:translateY(15px)} }
+    .perception-label {
+      position:absolute; z-index:30; display:none;
+    }
+    @media(min-width:1024px) { .perception-label { display:flex; flex-direction:column; align-items:center; } }
+    .perception-label.right-pos { top:calc(20% + 80px); right:24%; }
+    .perception-label.left-pos  { top:calc(20% - 40px); left:24%; }
+    .perception-badge {
+      padding:12px 20px; background:rgba(59,130,246,0.1); backdrop-filter:blur(16px);
+      border:1px solid rgba(59,130,246,0.2); border-top:4px solid var(--blue);
+      border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+      font-size:13px; font-weight:900; color:#93C5FD; letter-spacing:0.1em;
+    }
+    .perception-line {
+      width:1px; background:linear-gradient(to bottom,var(--blue),rgba(59,130,246,0.5),transparent);
+    }
+    .perception-line.long { height:224px; }
+    .perception-line.short { height:96px; }
+    .perception-dot {
+      width:8px; height:8px; border-radius:50%; background:#93C5FD;
+      box-shadow:0 0 15px rgba(147,197,253,0.8);
+      animation:pulseDot 2s ease-in-out infinite;
+    }
+    .perception-label.right-pos .perception-dot { animation-delay:0s; }
+    .perception-label.left-pos  .perception-dot { animation-delay:0.5s; }
+    @keyframes pulseDot { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.5);opacity:1} }
+
+    /* ─────────────── ANXIETY ─────────────── */
+    #anxiety {
+      background:#020617; border-top:1px solid rgba(255,255,255,0.05);
+      position:relative; overflow:hidden; padding:96px 0;
+    }
+    .anxiety-grid { display:grid; grid-template-columns:1fr; gap:48px; align-items:center; }
+    @media(min-width:1024px) { .anxiety-grid { grid-template-columns:5fr 7fr; } }
+    /* 三大设计策略样式 */
+    .anxiety-strategies { display:flex; flex-direction:column; gap:24px; }
+    .strategy-item {
+      display:flex; gap:16px; padding:20px;
+      border-radius:12px; background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.08);
+      transition:background 0.3s, border-color 0.3s;
+    }
+    .strategy-item:hover {
+      background:rgba(59,130,246,0.08);
+      border-color:rgba(59,130,246,0.2);
+    }
+    .strategy-icon {
+      width:48px; height:48px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:10px; background:rgba(59,130,246,0.1);
+      color:#93C5FD;
+    }
+    .strategy-icon svg { width:24px; height:24px; }
+    .strategy-content { flex:1; }
+    .strategy-title {
+      font-size:16px; font-weight:700; color:#fff; margin:0 0 8px 0;
+      letter-spacing:0.02em;
+    }
+    .strategy-desc {
+      font-size:14px; color:rgba(255,255,255,0.7); line-height:1.7; margin:0;
+    }
+    .anxiety-wheel {
+      position:relative; display:flex; align-items:center; justify-content:center;
+      height:800px; overflow:visible;
+      width:100%;
+    }
+    /* 卡片直接定位在anxiety-wheel中，绕圆心旋转，始终正对画面 */
+    .wheel-card {
+      position:absolute; width:400px;
+      left:calc(50% + 200px); top:50%;
+      border-radius:16px; overflow:hidden;
+      box-shadow:0 25px 50px rgba(0,0,0,0.4);
+      border:1px solid rgba(255,255,255,0.1);
+      background:#0F172A;
+      transform-origin:0 0;
+      animation:cardSpin 40s linear infinite;
+    }
+    .anxiety-wheel:hover .wheel-card { animation-play-state:paused; }
+    .wheel-card img {
+      width:100%; height:auto; display:block;
+    }
+    /* 四张卡片每隔90度，反向旋转补偿使卡片始终正对画面 */
+    .wheel-card[data-index="0"] { animation-delay:0s; }
+    .wheel-card[data-index="1"] { animation-delay:-10s; }
+    .wheel-card[data-index="2"] { animation-delay:-20s; }
+    .wheel-card[data-index="3"] { animation-delay:-30s; }
+    @keyframes cardSpin {
+      0% { transform:rotate(0deg) translateX(380px) rotate(0deg); }
+      25% { transform:rotate(90deg) translateX(380px) rotate(-90deg); }
+      50% { transform:rotate(180deg) translateX(380px) rotate(-180deg); }
+      75% { transform:rotate(270deg) translateX(380px) rotate(-270deg); }
+      100% { transform:rotate(360deg) translateX(380px) rotate(-360deg); }
+    }
+
+    /* ─────────────── EXECUTION ─────────────── */
+    #execution { background:#020617; padding:96px 0; overflow:hidden; }
+    .exec-labels {
+      position:relative; height:96px; max-width:1400px; margin:0 auto;
+    }
+    .exec-label {
+      position:absolute; display:flex; align-items:center; gap:12px;
+      padding:10px 20px; background:rgba(59,130,246,0.05);
+      border-left:1px solid rgba(59,130,246,0.4); border-radius:0 8px 8px 0;
+      top:16px;
+    }
+    .exec-label.left  { right:calc(55% + 32px); }
+    .exec-label.right { left:55%; }
+    .exec-label .dot { width:6px; height:6px; background:var(--blue); transform:rotate(45deg); box-shadow:0 0 10px rgba(59,130,246,0.6); }
+    .exec-label span { color:rgba(255,255,255,0.9); font-size:15px; font-weight:600; white-space:nowrap; }
+    /* 装饰文字连接线 */
+    .exec-label .connector {
+      position:absolute; top:100%; left:0; width:1px;
+      height:0; background:linear-gradient(to bottom, rgba(59,130,246,0.6), rgba(59,130,246,0.1));
+      transition:height 1s ease-out 0.5s;
+    }
+    .exec-label.left .connector { left:50%; transform:translateX(-50%) skewY(-20deg); }
+    .exec-label.right .connector { left:50%; transform:translateX(-50%) skewY(-20deg); }
+    .exec-cards-inner.visible ~ .exec-labels .exec-label .connector,
+    .exec-label.visible .connector { height:60px; }
+    .exec-label .connector-dot {
+      position:absolute; bottom:-4px; left:50%; transform:translateX(-50%);
+      width:8px; height:8px; background:var(--blue); border-radius:50%;
+      box-shadow:0 0 12px rgba(59,130,246,0.8);
+      opacity:0; transition:opacity 0.3s ease-out 1.5s;
+    }
+    .exec-cards-inner.visible ~ .exec-labels .exec-label .connector-dot,
+    .exec-label.visible .connector-dot { opacity:1; }
+    /* 3D 空间纵深卡片布局 - 等轴投影，边保持平行 */
+    .exec-cards {
+      position:relative; width:100%; max-width:1400px; margin:-40px auto 0;
+      height:600px; display:flex; align-items:center; justify-content:center;
+    }
+    .exec-cards-inner {
+      position:relative; width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      transform-style:preserve-3d;
+      transform:scale(0.3);
+      opacity:0.5;
+      transition:transform 1.2s ease-out, opacity 0.5s ease-out;
+    }
+    .exec-cards-inner.visible {
+      transform:scale(1);
+      opacity:1;
+    }
+    .exec-card {
+      position:absolute; width:560px;
+      border-radius:16px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5);
+      border:1px solid rgba(255,255,255,1);
+    }
+    .exec-card img { width:100%; height:auto; display:block; }
+    /* 四张卡片从合并到展开的动画 - skewY 实现3D倾斜感 */
+    .exec-card {
+      animation-fill-mode: forwards;
+      animation-duration: 1s;
+      animation-timing-function: ease-out;
+      animation-delay: calc(var(--card-index, 0) * 0.15s);
+      animation-play-state: paused;
+    }
+    .exec-cards-inner.visible .exec-card { animation-play-state: running; }
+    .ec1 { --card-index: 0; animation-name: cardExpand1; }
+    .ec2 { --card-index: 1; animation-name: cardExpand2; }
+    .ec3 { --card-index: 2; animation-name: cardExpand3; }
+    .ec4 { --card-index: 3; animation-name: cardExpand4; }
+    /* 初始合并状态 */
+    .exec-card:not(.animating) {
+      transform: translateX(0) skewY(0);
+    }
+    @keyframes cardExpand1 {
+      0% { transform: translateX(0) skewY(0); }
+      100% { transform: translateX(-420px) skewY(-20deg); }
+    }
+    @keyframes cardExpand2 {
+      0% { transform: translateX(0) skewY(0); }
+      100% { transform: translateX(-140px) skewY(-20deg); }
+    }
+    @keyframes cardExpand3 {
+      0% { transform: translateX(0) skewY(0); }
+      100% { transform: translateX(140px) skewY(-20deg); }
+    }
+    @keyframes cardExpand4 {
+      0% { transform: translateX(0) skewY(0); }
+      100% { transform: translateX(420px) skewY(-20deg); }
+    }
+    @media(max-width:1200px) {
+      .exec-card { width:450px; }
+      @keyframes cardExpand1 { 100% { transform: translateX(-340px) skewY(-20deg); } }
+      @keyframes cardExpand2 { 100% { transform: translateX(-115px) skewY(-20deg); } }
+      @keyframes cardExpand3 { 100% { transform: translateX(115px) skewY(-20deg); } }
+      @keyframes cardExpand4 { 100% { transform: translateX(340px) skewY(-20deg); } }
+    }
+    @media(max-width:768px) {
+      .exec-labels { display:none; }
+      .exec-cards { height:400px; }
+      .exec-card { width:320px; }
+      @keyframes cardExpand1 { 100% { transform: translateX(-200px) skewY(-16deg); } }
+      @keyframes cardExpand2 { 100% { transform: translateX(-70px) skewY(-16deg); } }
+      @keyframes cardExpand3 { 100% { transform: translateX(70px) skewY(-16deg); } }
+      @keyframes cardExpand4 { 100% { transform: translateX(200px) skewY(-16deg); } }
+    }
+    @media(max-width:480px) {
+      .exec-labels { display:none; }
+      .exec-cards { height:280px; }
+      .ec1,.ec4 { display:none; }
+      .exec-card { width:240px; }
+      @keyframes cardExpand2 { 100% { transform: translateX(-60px) skewY(-12deg); } }
+      @keyframes cardExpand3 { 100% { transform: translateX(60px) skewY(-12deg); } }
+    }
+
+    /* ─────────────── FEEDBACK ─────────────── */
+    #feedback { background:#020617; border-top:1px solid rgba(255,255,255,0.05); }
+    .feedback-grid { display:grid; grid-template-columns:1fr; gap:48px; align-items:center; margin-top:100px; }
+    @media(min-width:1024px) { .feedback-grid { grid-template-columns:7fr 5fr; } }
+    .feedback-img-wrap { position:relative; }
+    .feedback-main { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:24px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 0 50px rgba(0,0,0,0.3); }
+    .feedback-overlay {
+      position:absolute; right:-16px; top:calc(50% + 60px); transform:translateY(-50%);
+      width:60%; display:none;
+    }
+    @media(min-width:768px) { .feedback-overlay { display:block; } }
+    .feedback-overlay-inner { background:#fff; padding:4px; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+    .feedback-overlay img { width:100%; height:auto; border-radius:4px; display:block; }
+    .feedback-items { display:flex; flex-direction:column; gap:12px; margin-top:24px; }
+    .feedback-item {
+      display:flex; align-items:center; gap:16px; padding:16px; border-radius:12px;
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05);
+    }
+    .feedback-item .check {
+      width:24px; height:24px; border-radius:50%; background:rgba(59,130,246,0.2);
+      display:flex; align-items:center; justify-content:center; color:var(--blue); flex-shrink:0;
+    }
+    .feedback-item span { color:rgba(255,255,255,0.8); font-size:13px; font-weight:500; }
+
+    /* ─────────────── METRICS ─────────────── */
+    #metrics { background:#020617; border-top:1px solid rgba(255,255,255,0.05); }
+    .metrics-grid { display:grid; grid-template-columns:1fr; gap:24px; margin-top:10px; }
+    @media(min-width:768px) { .metrics-grid { grid-template-columns:1fr 1fr; } }
+    @media(min-width:1024px) { .metrics-grid { grid-template-columns:repeat(4,1fr); } }
+    .metric-card {
+      padding:24px; border-radius:24px; position:relative; border:1px solid rgba(255,255,255,0.05);
+      transition:border-color 0.3s; cursor:default;
+    }
+    .metric-card:hover { border-color:rgba(255,255,255,0.1); }
+    .metric-card.blue   { background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(37,99,235,0.05)); }
+    .metric-card.indigo { background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(79,70,229,0.05)); }
+    .metric-card.cyan   { background:linear-gradient(135deg,rgba(6,182,212,0.2),rgba(8,145,178,0.05)); }
+    .metric-card.purple { background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(147,51,234,0.05)); }
+    .metric-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
+    .metric-icon { padding:8px; border-radius:8px; background:rgba(255,255,255,0.05); transition:transform 0.3s; }
+    .metric-card:hover .metric-icon { transform:scale(1.1); }
+    .metric-icon svg { width:24px; height:24px; }
+    .metric-en { font-size:10px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:4px; }
+    .metric-zh { font-size:18px; font-weight:700; color:#fff; }
+    .metric-value { font-size:36px; font-weight:900; color:#fff; margin-bottom:4px; line-height:1; }
+    .metric-label { font-size:11px; color:rgba(255,255,255,0.6); font-weight:500; margin-bottom:24px; }
+    .metric-stat { margin-bottom:16px; }
+    .metric-stat-row { display:flex; justify-content:space-between; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+    .metric-stat-row .key { color:rgba(255,255,255,0.4); }
+    .metric-stat-row .val { color:var(--blue); }
+    .metric-bar { height:4px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; }
+    .metric-bar-fill { height:100%; background:rgba(59,130,246,0.4); border-radius:999px; transition:width 1s ease; width:0; }
+    .metric-desc { padding-top:16px; border-top:1px solid rgba(255,255,255,0.05); font-size:12px; color:var(--muted); line-height:1.6; font-style:italic; }
+
+    .iter-card { margin-top:32px; padding:32px; border-radius:24px; position:relative; overflow:hidden; }
+    .iter-grid { display:grid; grid-template-columns:1fr; gap:48px; align-items:center; }
+    @media(min-width:1024px) { .iter-grid { grid-template-columns:4fr 8fr; } }
+    .iter-bar-wrap { space-y:24px; }
+    .iter-bar { margin-bottom:24px; }
+    .iter-bar-label { display:flex; justify-content:space-between; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
+    .iter-bar-label.dim { color:rgba(255,255,255,0.4); }
+    .iter-bar-label.bright { color:var(--blue); }
+    .iter-bar-track { height:12px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; }
+    .iter-bar-fill { height:100%; border-radius:999px; transition:width 1.5s ease; width:0; }
+    .iter-bar-fill.dim { background:rgba(255,255,255,0.1); }
+    .iter-bar-fill.bright { background:linear-gradient(90deg,#2563EB,#3B82F6); }
+
+    /* ─────────────── SVG ICONS ─────────────── */
+    .icon-check { display:inline-block; }
+
+    /* ─────────────── FOOTER ─────────────── */
+    footer {
+      border-top:1px solid rgba(255,255,255,0.05); padding:48px 24px;
+      text-align:center; color:var(--muted);
+    }
+    footer p { font-size:12px; }
+  </style>
+</head>
+<body>
+  <!-- Back Button -->
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+  </a>
+
+<div class="scanline"></div>
+
+<!-- ══════════════ COVER ══════════════ -->
+<section id="cover">
+  <div class="meta-header">
+    <span class="metadata-text">B-END INTERFACE DESIGN + AI EMPOWERS WORKFLOW</span>
+    <span class="metadata-text">2026 DESIGN</span>
+  </div>
+  <div class="glow1"></div>
+  <div class="glow2"></div>
+
+  <div class="cover-grid" style="flex:1;">
+    <div class="cover-left reveal-left visible" style="opacity:1;transform:translateY(-10px) translateX(0);">
+      <div class="cover-title">DESIGN<br><span class="text-outline">SUMMARY</span></div>
+      <div class="cover-subtitle">AI 赋能岗位建设流程总结</div>
+      <p class="cover-desc">本模块面向职教教师专业管理工作，引入AI协助建设岗位信息，替代手动填写与资料搜集，提效减负、保障岗位信息质量。</p>
+      <div class="cover-tags">
+        <span class="cover-tag">UI</span>
+        <span class="cover-tag">AI</span>
+        <span class="cover-tag">B端产品</span>
+      </div>
+    </div>
+    <div class="cover-mockup reveal-right" style="opacity:0;transform:translateX(30px) translateY(-40px) scale(0.9);transition:opacity 1s ease 0.2s, transform 1s ease 0.2s;">
+      <div class="mockup-screen">
+        <img src="https://i.postimg.cc/cJZPHV2c/05-chuang-jian-gang-wei-di1bu-jie-xi-wan-cheng-xiu-gai-2x.png" alt="主界面" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+        <div class="mockup-notch"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <span class="metadata-text">SUMMARY OF AI EMPOWERMENT FOR VOCATIONAL EDUCATION UI/UE DESIGN PROJECT</span>
+    <div style="display:flex;align-items:center;gap:24px;">
+      <span class="metadata-text">AI 赋能职教 -UI/UE- 设计项目总结</span>
+      <div class="cover-footer-icons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 01 项目介绍 ══════════════ -->
+<section id="background">
+  <div class="bg-img">
+    <img src="https://i.postimg.cc/9Fw02N6q/abd9c48d4eb80e27af7efe3042853e6d.jpg" alt="AI Future" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+  </div>
+  <div class="section-container" style="position:relative;z-index:10;width:100%;">
+    <div class="section-header reveal">
+      <div class="outline-text">PROJECT INTRODUCE</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.01</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>项目介绍 <span class="sub-en">PROJECT INTRODUCE</span></h2>
+        <div class="subtitle">AI 赋能职教致力于通过数字化手段，为职教教师提供全生命周期的岗位建设与管理解决方案。</div>
+      </div>
+    </div>
+    <p style="font-size:16px;color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:48px;max-width:960px;" class="reveal">
+      本模块面向职教教师群体，核心服务于"根据人才培养方案生成对应岗位信息"的核心业务场景。为解决教师搜集最新岗位标准、需求等资料成本高、耗时长的问题，引入"AI +"协助建设岗位信息，提升岗位信息生成效率与质量。
+    </p>
+    <div class="bg-cards">
+      <div class="bg-card reveal">
+        <div class="icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>提效减负</h4>
+        <p>降低教师工作负荷、提升岗位信息生成效率与质量。</p>
+      </div>
+      <div class="bg-card reveal" style="transition-delay:0.1s;">
+        <div class="icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>高度匹配</h4>
+        <p>确保岗位信息与人才培养方案高度匹配，贴合核心诉求。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 02 用户痛点 ══════════════ -->
+<section id="painpoints">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <div class="outline-text">PAIN POINTS</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.02</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>用户痛点 <span class="sub-en">PAIN POINTS</span></h2>
+      </div>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card reveal">
+        <div class="corner"></div>
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <h3>手动输入繁琐，效率低下</h3>
+        <p>岗位信息包含多个核心字段，需转化典型任务并关联能力项。教师日常工作繁重，手动填写占用大量时间，导致整体效率低下。</p>
+      </div>
+      <div class="pain-card reveal" style="transition-delay:0.1s;">
+        <div class="corner"></div>
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3>资料搜集困难，脱离实际</h3>
+        <p>获取行业最新标准耗时费力，且因缺乏一线实践经验，搜集资料易与实际岗位脱节，难以精准把握岗位最新要求。</p>
+      </div>
+      <div class="pain-card reveal" style="transition-delay:0.2s;">
+        <div class="corner"></div>
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h3>AI 生成黑盒，体验欠佳</h3>
+        <p>AI 推理过程不透明，教师难以信任其专业性与合规性。且生成过程缺乏进度反馈与推理展示，导致无感知等待，削弱了使用体验与接受度。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 03 设计目标 ══════════════ -->
+<section id="designgoal">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <div class="outline-text">DESIGN GOALS</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.03</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>设计目标 <span class="sub-en">DESIGN GOALS</span></h2>
+      </div>
+    </div>
+    <div class="goal-steps reveal">
+      <div class="goal-line"></div>
+      <div class="goal-step">
+        <div class="goal-step-top">
+          <div class="goal-step-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <h4>输入<div class="step-sub">聚焦关键信息</div></h4>
+        </div>
+        <div class="goal-dot"></div>
+        <div class="goal-content">
+          <ul>
+            <li><span>结构化数据输入，降低操作成本</span></li>
+            <li><span>智能预判需求，前置提供个性化建议</span></li>
+            <li><span>支持参考资料上传，优化流程精准度</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="goal-step" style="transition-delay:0.1s;">
+        <div class="goal-step-top">
+          <div class="goal-step-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          </div>
+          <h4>感知推理<div class="step-sub">步骤化呈现</div></h4>
+        </div>
+        <div class="goal-dot"></div>
+        <div class="goal-content">
+          <ul>
+            <li><span>透明展示 AI 思考逻辑</span></li>
+            <li><span>拆解 AI 工作流程，实现步骤化解析</span></li>
+            <li><span>优化感知体验，缓解用户等待焦虑</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="goal-step" style="transition-delay:0.2s;">
+        <div class="goal-step-top">
+          <div class="goal-step-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h4>执行<div class="step-sub">让用户做判断</div></h4>
+        </div>
+        <div class="goal-dot"></div>
+        <div class="goal-content">
+          <ul>
+            <li><span>提供建议，决策权归用户</span></li>
+            <li><span>多用判断，少用选择</span></li>
+            <li><span>合理输出粒度，降低决策负担</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="goal-step" style="transition-delay:0.3s;">
+        <div class="goal-step-top">
+          <div class="goal-step-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <h4>反馈修正<div class="step-sub">便捷及精准</div></h4>
+        </div>
+        <div class="goal-dot"></div>
+        <div class="goal-content">
+          <ul>
+            <li><span>无需跳转页面，所见即改</span></li>
+            <li><span>同步修改效果，直观高效</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 04 输入 ══════════════ -->
+<section id="input">
+  <div class="section-container" style="padding-bottom:0;">
+    <div class="section-header reveal">
+      <div class="outline-text">INPUT</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.04</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>输入：聚焦关键信息的输入 <span class="sub-en">INPUT</span></h2>
+        <div class="subtitle">通过结构化的岗位数据采集，降低教师的操作门槛。</div>
+      </div>
+    </div>
+    <div class="input-grid">
+      <div class="reveal-left">
+        <h4 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:32px;">输入环节的迭代优化</h4>
+        <div class="input-steps">
+          <div class="input-step">
+            <div class="input-step-line"></div>
+            <div class="input-step-dot"></div>
+            <h5>结构化数据输入</h5>
+            <p>通过结构化的数据降低用户输入成本，增加输入内容的可控性。</p>
+          </div>
+          <div class="input-step">
+            <div class="input-step-line"></div>
+            <div class="input-step-dot"></div>
+            <h5>智能预判建议</h5>
+            <p>预知用户需求，提前给出输入方向建议。</p>
+          </div>
+          <div class="input-step">
+            <div class="input-step-dot"></div>
+            <h5>参考资料上传</h5>
+            <p>允许用户上传参考资料（如人培方案），让后续的 AI 生成环节更有针对性。</p>
+          </div>
+        </div>
+        <div class="input-tags">
+          <span class="input-tag">结构化表单</span>
+          <span class="input-tag">智能预判</span>
+          <span class="input-tag">资料解析</span>
+          <span class="input-tag">输入校验</span>
+          <span class="input-tag">多模态支持</span>
+        </div>
+      </div>
+      <div class="reveal-right">
+        <div class="input-mockups">
+          <div class="v-card v1">
+            <img src="https://i.postimg.cc/JhbcDKWB/条件设置弹窗_(2).png" alt="V1.0" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.minHeight='160px';">
+            <div class="v-badge">V1.0</div>
+          </div>
+          <div class="v-card v2">
+            <img src="https://i.postimg.cc/cJQMgTNt/条件设置弹窗_(1).png" alt="V2.0" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.minHeight='200px';">
+            <div class="v-badge">V2.0</div>
+          </div>
+          <div class="v-card v3">
+            <img src="https://i.postimg.cc/5twqYpMz/条件设置弹窗.png" alt="V3.0" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.minHeight='220px';">
+            <div class="v-badge">V3.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 05 感知推理 ══════════════ -->
+<section id="perception">
+  <div class="section-container" style="position:relative;z-index:10;padding-bottom:0;">
+    <div class="section-header reveal">
+      <div class="outline-text">PERCEPTION REASONING</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.05</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>感知推理 <span class="sub-en">PERCEPTION REASONING</span></h2>
+        <div class="subtitle">AI 实时分析岗位需求，呈现岗位信息推导过程，让岗位建设更加科学专业。</div>
+      </div>
+    </div>
+  </div>
+  <div class="perception-bg" style="height:700px;position:relative;">
+    <img src="https://i.postimg.cc/cH2vR982/思考链.png" alt="感知推理" referrerpolicy="no-referrer" style="object-fit:contain;" onerror="this.style.display='none'">
+    <div class="perception-fade-left"></div>
+    <div class="perception-fade-right"></div>
+    <div class="perception-fade"></div>
+    <div class="perception-fade2"></div>
+    <div class="perception-fade-top"></div>
+
+    <div class="perception-float left">
+      <img src="https://i.postimg.cc/52vZdP46/步骤条.png" alt="步骤条" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+    </div>
+    <div class="perception-float right">
+      <img src="https://i.postimg.cc/W3GxPN8p/zu-4591-4x.png" alt="右侧卡片" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+    </div>
+
+    <div class="perception-label right-pos reveal">
+      <div class="perception-badge">呈现AI 思考过程</div>
+      <div class="perception-line long"></div>
+      <div class="perception-dot"></div>
+    </div>
+    <div class="perception-label left-pos reveal">
+      <div class="perception-badge">步骤化的解释AI 工作流程</div>
+      <div class="perception-line short"></div>
+      <div class="perception-dot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 06 感知即设计：破解等待焦虑 ══════════════ -->
+<section id="anxiety">
+  <div class="section-container">
+    <div class="anxiety-grid">
+      <div class="reveal-left">
+        <div class="section-header" style="margin-bottom:32px;">
+          <div class="outline-text">REDUCE ANXIETY</div>
+          <div class="inner">
+            <div class="no-line">
+              <div class="diamond"></div>
+              <span class="no-label">NO.06</span>
+              <div class="line-sep"></div>
+            </div>
+            <h2 style="white-space:nowrap;flex-wrap:nowrap;">感知即设计：破解等待焦虑 <span class="sub-en">REDUCE ANXIETY</span></h2>
+            <div class="subtitle">用视觉语言填补等待空白，让用户感知时间的意义。</div>
+          </div>
+        </div>
+
+        <!-- 三大设计策略 -->
+        <div class="anxiety-strategies" style="margin-top:200px;">
+          <div class="strategy-item">
+            <div class="strategy-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 9h18M9 21V9"/>
+              </svg>
+            </div>
+            <div class="strategy-content">
+              <h4 class="strategy-title">提前展示确定内容</h4>
+              <p class="strategy-desc">静态模块先行渲染，在等待过程中呈现已确定的界面框架，让用户第一时间获得进度感知，建立对系统的信任预期。</p>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="strategy-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="7" height="7" rx="1" opacity="0.3"/>
+                <rect x="14" y="3" width="7" height="7" rx="1" opacity="0.6"/>
+                <rect x="3" y="14" width="7" height="7" rx="1" opacity="0.4"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </div>
+            <div class="strategy-content">
+              <h4 class="strategy-title">骨架屏占位过渡</h4>
+              <p class="strategy-desc">用结构化的灰色占位块替代空白加载状态，在内容填充前保持界面的完整感与连续性，避免用户因空白而产生的焦虑断层。</p>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="strategy-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="strategy-content">
+              <h4 class="strategy-title">感知进度管理</h4>
+              <p class="strategy-desc">分阶段的视觉反馈机制，将抽象的等待时间转化为可感知的进度节点，消除不确定性带来的心理压力，让等待变得有序可控。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-right">
+        <div class="anxiety-wheel" id="anxietyWheel">
+          <!-- 卡片直接定位在anxiety-wheel中，绕圆心旋转 -->
+          <div class="wheel-card" data-index="0">
+            <img src="https://i.postimg.cc/zv56DyGf/14_创建岗位_第4步_生成中_2x.png" alt="Step 4" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.display='block';this.style.height='160px';">
+          </div>
+          <div class="wheel-card" data-index="1">
+            <img src="https://i.postimg.cc/L5Rw4J6Q/12_创建岗位_第3步_能力项详情生成中_2x.png" alt="Step 3" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.display='block';this.style.height='160px';">
+          </div>
+          <div class="wheel-card" data-index="2">
+            <img src="https://i.postimg.cc/XJ9t0f3D/08_创建岗位_第2步_解析中_2x.png" alt="Step 2" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.display='block';this.style.height='160px';">
+          </div>
+          <div class="wheel-card" data-index="3">
+            <img src="https://i.postimg.cc/8CJqZ8Y5/03_创建岗位_第1步_正在解析_2x.png" alt="Step 1" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.display='block';this.style.height='160px';">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 07 执行 ══════════════ -->
+<section id="execution">
+  <div class="section-container" style="padding-bottom:0;">
+    <div class="section-header reveal">
+      <div class="outline-text">EXECUTION STRATEGY</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.07</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>执行 <span class="sub-en">EXECUTION STRATEGY</span></h2>
+        <div class="subtitle">AI 提供针对性的岗位建设建议与内容优化方案，辅助教师快速决策。</div>
+      </div>
+    </div>
+  </div>
+  <div class="exec-labels">
+    <div class="exec-label left reveal-left">
+      <div class="dot"></div>
+      <span>让用户更多的做判断题，而不是选择题</span>
+      <div class="connector"><div class="connector-dot"></div></div>
+    </div>
+    <div class="exec-label right reveal-right">
+      <div class="dot"></div>
+      <span>输出内容粒度适中，降低用户的决策负担</span>
+      <div class="connector"><div class="connector-dot"></div></div>
+    </div>
+  </div>
+  <div class="exec-cards">
+    <div class="exec-cards-inner">
+      <div class="exec-card ec1"><img src="https://i.postimg.cc/Pr78TjmR/05-1-2x.png" alt="Step 1" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b'"></div>
+      <div class="exec-card ec2"><img src="https://i.postimg.cc/65PGtXdP/09-2-2x.png" alt="Step 2" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b'"></div>
+      <div class="exec-card ec3"><img src="https://i.postimg.cc/DyNbnTqt/13-3-2x.png" alt="Step 3" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b'"></div>
+      <div class="exec-card ec4"><img src="https://i.postimg.cc/28tBrD4X/15-4-2x.png" alt="Step 4" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b'"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 08 反馈修正 ══════════════ -->
+<section id="feedback">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <div class="outline-text">FEEDBACK CORRECTION</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.08</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>反馈修正 <span class="sub-en">FEEDBACK CORRECTION</span></h2>
+        <div class="subtitle">支持岗位信息实时修正与内容原位更新，确保数据与教学需求高度同步。</div>
+      </div>
+    </div>
+    <div class="feedback-grid">
+      <div class="reveal-left">
+        <div class="feedback-img-wrap">
+          <img class="feedback-main" src="https://i.postimg.cc/MG6fqbsm/bian-ji05-chuang-jian-gang-wei-di1bu-jie-xi-wan-cheng-xiu-gai-2x.png" alt="反馈修正界面" referrerpolicy="no-referrer" onerror="this.style.background='#1e293b';this.style.minHeight='300px';">
+          <div class="feedback-overlay">
+            <div class="feedback-overlay-inner">
+              <img src="https://i.postimg.cc/25Hym1X4/rong-qi-168500-2x.png" alt="装饰详情" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-right" style="display:flex;flex-direction:column;gap:32px;">
+        <div>
+          <h4 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:16px;">原位编辑与实时同步</h4>
+          <p style="color:var(--muted);line-height:1.8;font-size:14px;">教师无需跳转页面，直接在AI生成的岗位信息对应位置修改，操作直观高效，契合教师"所见即改"的使用习惯。</p>
+        </div>
+        <div class="feedback-items">
+          <div class="feedback-item">
+            <div class="check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span>原位编辑，所见即改</span>
+          </div>
+          <div class="feedback-item">
+            <div class="check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span>实时预览，即时生效</span>
+          </div>
+          <div class="feedback-item">
+            <div class="check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span>云端渲染，流畅高效</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 09 设计体验度量衡 ══════════════ -->
+<section id="metrics">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <div class="outline-text">DESIGN METRICS</div>
+      <div class="inner">
+        <div class="no-line">
+          <div class="diamond"></div>
+          <span class="no-label">NO.09</span>
+          <div class="line-sep"></div>
+        </div>
+        <h2>设计体验度量衡 <span class="sub-en">DESIGN METRICS</span></h2>
+        <div class="subtitle">从效率提升、认知负荷、AI采用率、用户满意度四个维度，量化评估设计方案的实际价值。</div>
+      </div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card blue reveal">
+        <div class="metric-head">
+          <div><div class="metric-en">Efficiency</div><div class="metric-zh">效率提升</div></div>
+          <div class="metric-icon" style="color:#60A5FA;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+        </div>
+        <div class="metric-value">75%</div>
+        <div class="metric-label">填写时间减少</div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">传统方式平均时间</span><span class="val">4h</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="100"></div></div>
+        </div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">AI辅助平均时间</span><span class="val">1h</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="25"></div></div>
+        </div>
+        <div class="metric-desc">"对比传统手动填写方式，岗位信息建设效率显著提升"</div>
+      </div>
+      <div class="metric-card indigo reveal" style="transition-delay:0.1s;">
+        <div class="metric-head">
+          <div><div class="metric-en">Cognitive</div><div class="metric-zh">认知负荷</div></div>
+          <div class="metric-icon" style="color:#818CF8;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+        </div>
+        <div class="metric-value">4.2<span style="font-size:20px;font-weight:400;">/5</span></div>
+        <div class="metric-label">信息理解度评分</div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">信息层级清晰度</span><span class="val">92%</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="92"></div></div>
+        </div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">视觉一致性</span><span class="val">95%</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="95"></div></div>
+        </div>
+        <div class="metric-desc">"AI推理过程可视化降低理解门槛"</div>
+      </div>
+      <div class="metric-card cyan reveal" style="transition-delay:0.2s;">
+        <div class="metric-head">
+          <div><div class="metric-en">Adoption</div><div class="metric-zh">AI采用率</div></div>
+          <div class="metric-icon" style="color:#22D3EE;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+        </div>
+        <div class="metric-value">87%</div>
+        <div class="metric-label">AI岗位生成采用率</div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">直接采用</span><span class="val">62%</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="62"></div></div>
+        </div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">修改后采用</span><span class="val">25%</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="25"></div></div>
+        </div>
+        <div class="metric-desc">"教师对AI生成岗位职责、能力要求的采用比例（含部分采用与修改后采用）"</div>
+      </div>
+      <div class="metric-card purple reveal" style="transition-delay:0.3s;">
+        <div class="metric-head">
+          <div><div class="metric-en">Satisfaction</div><div class="metric-zh">用户满意度</div></div>
+          <div class="metric-icon" style="color:#C084FC;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          </div>
+        </div>
+        <div class="metric-value">4.6<span style="font-size:20px;font-weight:400;">/5</span></div>
+        <div class="metric-label">整体满意度评分</div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">功能易用性</span><span class="val">4.8</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="96"></div></div>
+        </div>
+        <div class="metric-stat">
+          <div class="metric-stat-row"><span class="key">内容准确性</span><span class="val">4.5</span></div>
+          <div class="metric-bar"><div class="metric-bar-fill" data-width="90"></div></div>
+        </div>
+        <div class="metric-desc">"教师对AI辅助岗位建设功能的整体满意度评分"</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="metadata-text">AI 赋能职教 · UI/UE · 设计项目总结 · 2026 DESIGN</p>
+</footer>
+
+<script>
+  // Intersection Observer for reveal animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Animate bars inside
+        entry.target.querySelectorAll('.metric-bar-fill, .iter-bar-fill').forEach(bar => {
+          const w = bar.dataset.width;
+          if (w) setTimeout(() => bar.style.width = w + '%', 300);
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .exec-cards-inner').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Cover mockup animate in on load
+  window.addEventListener('load', () => {
+    const mockup = document.querySelector('.cover-mockup');
+    if (mockup) {
+      mockup.style.opacity = '1';
+      mockup.style.transform = 'translateX(0) translateY(-40px) scale(1)';
+    }
+  });
+
+  // 摩天轮鼠标滚轮驱动旋转
+  const anxietyWheel = document.getElementById('anxietyWheel');
+  const wheelCards = anxietyWheel.querySelectorAll('.wheel-card');
+
+  let wheelAngle = 0;
+  let isWheelInteracting = false;
+  let autoResumeTimer = null;
+
+  if (anxietyWheel && wheelCards.length > 0) {
+    anxietyWheel.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      // 停止自动动画
+      wheelCards.forEach(card => card.style.animation = 'none');
+      isWheelInteracting = true;
+
+      // 清除之前的恢复计时器
+      if (autoResumeTimer) clearTimeout(autoResumeTimer);
+
+      // 根据滚轮方向调整角度
+      wheelAngle += e.deltaY * 0.5; // 滚动灵敏度
+
+      // 卡片绕圆心旋转，始终正对画面（反向旋转补偿）
+      wheelCards.forEach((card, index) => {
+        const baseAngle = index * 90; // 每张卡片基础角度间隔90度
+        const totalAngle = wheelAngle + baseAngle;
+        card.style.transform = `rotate(${totalAngle}deg) translateX(380px) rotate(-${totalAngle}deg)`;
+      });
+
+      // 3秒后恢复自动动画
+      autoResumeTimer = setTimeout(() => {
+        isWheelInteracting = false;
+        // 恢复自动动画，从当前角度平滑过渡
+        const normalizedAngle = wheelAngle % 360;
+        wheelCards.forEach((card, index) => {
+          card.style.animation = `cardSpin 40s linear infinite`;
+          card.style.animationDelay = `-${(normalizedAngle / 360 * 40 + index * 10)}s`;
+        });
+      }, 3000);
+    }, { passive: false });
+  }
+</script>
+</body>
+</html>
